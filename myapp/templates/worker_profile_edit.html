@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Worker Profile Details — Workverse{% endblock %}
+{% block header_title %}Update Professional Profile Trade Bio{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in">
+
+  <!-- ================= MASTER DASHBOARD HEADER ================= -->
+  <div class="bg-gradient-to-br from-white to-slate-50/50 backdrop-blur-md p-6 rounded-[2rem] border border-[#b5baff]/30 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="space-y-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#9fa1ff]"></span>
+        <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest font-mono">Specialist Center</span>
+      </div>
+      <h3 class="font-display font-black text-2xl text-slate-950 tracking-tight leading-none">
+        Edit Professional Profile Info
+      </h3>
+      <p class="text-xs text-slate-500 font-medium max-w-xl">
+        Refine your public freelancer record. Information updated here will dynamically display on Pakistan's local trade specialists directory.
+      </p>
+    </div>
+    
+    <a 
+      href="{% url 'worker_dashboard' %}"
+      class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-4 py-2 rounded-xl transition"
+    >
+      <i class="ti ti-arrow-left"></i>
+      <span>Worker Dashboard</span>
+    </a>
+  </div>
+
+  <!-- Primary Grid Split (Preview Card & Edit Form) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- LEFT SIDE: Live Preview Card (1 col) -->
+    <div class="space-y-6 lg:col-span-1">
+      
+      <!-- PROFILE CREDENTIALS WIDGET PREVIEW -->
+      <div class="bg-white p-6 rounded-[2rem] border border-[#b5baff]/25 shadow-xs space-y-5 sticky top-6">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-50">
+          <h4 class="font-display font-black text-xs text-slate-900 tracking-tight uppercase">Specialist Profile Directory</h4>
+          <span class="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="preview-status-dot"></span>
+            <span id="preview-status-text">{% if profile.is_available %}Available{% else %}Busy{% endif %}</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3.5">
+          <div class="w-14 h-14 bg-indigo-50 border border-[#9fa1ff]/20 text-[#9fa1ff] rounded-[1.25rem] font-display font-black text-lg flex items-center justify-center relative shadow-xs shrink-0">
+            <span id="preview-initials">{{ request.user.name|slice:":2"|upper }}</span>
+            {% if profile.is_verified %}
+              <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#9fa1ff] rounded-full border-2 border-white flex items-center justify-center text-white" title="Verified Professional Specialist">
+                <i class="ti ti-rosette-filled text-[11px] leading-none"></i>
+              </span>
+            {% endif %}
+          </div>
+          <div class="min-w-0">
+            <h5 class="font-display font-bold text-sm text-slate-950 truncate leading-none mb-1">
+              <span id="preview-name">{{ request.user.name|default:request.user.email }}</span>
+            </h5>
+            <div class="flex flex-wrap gap-1">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-500 uppercase" id="preview-badge-category">{{ current_category|default:'General' }}</span>
+              <span class="bg-indigo-50 px-1.5 py-0.5 rounded text-[9px] font-bold text-indigo-500 uppercase" id="preview-badge-city">{{ current_city|default:'Select City' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail attributes metrics description -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+              <i class="ti ti-tools text-[#9fa1ff]"></i>
+              Category specialty:
+            </span>
+            <strong class="text-slate-800 font-bold text-right" id="preview-table-category">{{ current_category|default:'General Specialty' }}</strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+              <i class="ti ti-map-pin text-[#9fa1ff]"></i>
+              Active City:
+            </span>
+            <strong class="text-slate-800 font-bold text-right" id="preview-table-city">{{ current_city|default:'Not Specified' }}</strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+              <i class="ti ti-hourglass-empty text-[#9fa1ff]"></i>
+              Registered experience:
+            </span>
+            <strong class="text-slate-800 font-bold text-right" id="preview-table-experience">{% if current_exp_years %}{{ current_exp_years }} Years{% else %}0 Years{% endif %}</strong>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-50 pt-3">
+          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono block mb-1">Description Bio</span>
+          <p class="text-xs text-slate-500 italic leading-relaxed font-medium" id="preview-bio-paragraph">
+            "{{ profile.bio|default:'No custom bio message specified. You can edit your profile details using the fields on the right to attract premium clients.' }}"
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE: Editor Form (2 cols) -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- Main Form Wrapper -->
+      <form method="POST" action="{% url 'worker_profile_edit' %}" class="bg-white p-6 md:p-8 rounded-[2rem] border border-[#b5baff]/25 shadow-xs space-y-6 transition-all">
+        {% csrf_token %}
+
+        <!-- Row 1: Name and Phone -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 block" for="id_name">
+              Full Name
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <i class="ti ti-user text-base"></i>
+              </span>
+              <input 
+                type="text" 
+                name="name" 
+                id="id_name"
+                value="{{ request.user.name|default:request.user.email }}"
+                required
+                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 font-semibold transition-all text-xs md:text-sm"
+                placeholder="Enter your professional display name"
+                oninput="onFieldNameChange(this)"
+              >
+            </div>
+            <p class="text-[10px] text-slate-400">This name is shown to clients on the marketplace directory.</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 block" for="id_phone">
+              Contact Phone
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <i class="ti ti-phone text-base"></i>
+              </span>
+              <input 
+                type="text" 
+                name="phone" 
+                id="id_phone"
+                value="{{ request.user.phone|default:'' }}"
+                required
+                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 font-semibold transition-all text-xs md:text-sm"
+                placeholder="e.g. 0300-1234567"
+              >
+            </div>
+            <p class="text-[10px] text-slate-400">Required so that clients can complete the coordination calls.</p>
+          </div>
+        </div>
+
+        <!-- Row 2: Specialty Category & Working City -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 block" for="id_category">
+              Specialist Trade Category
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9fa1ff]">
+                <i class="ti ti-tools text-base"></i>
+              </span>
+              <select 
+                name="category" 
+                id="id_category"
+                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 font-semibold transition-all text-xs md:text-sm appearance-none cursor-pointer"
+                onchange="onFieldCategoryChange(this)"
+              >
+                {% for cat in categories_choices %}
+                  <option value="{{ cat }}" {% if cat == current_category %}selected{% endif %}>{{ cat }} Service</option>
+                {% endfor %}
+              </select>
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <i class="ti ti-chevron-down text-xs"></i>
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400">Select the primary technical domain of your domestic services.</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 block" for="id_city">
+              Active Operational City
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9fa1ff]">
+                <i class="ti ti-map-pin text-base"></i>
+              </span>
+              <select 
+                name="city" 
+                id="id_city"
+                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 font-semibold transition-all text-xs md:text-sm appearance-none cursor-pointer"
+                onchange="onFieldCityChange(this)"
+              >
+                {% for city in cities_choices %}
+                  <option value="{{ city }}" {% if city == current_city %}selected{% endif %}>{{ city }}</option>
+                {% endfor %}
+              </select>
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <i class="ti ti-chevron-down text-xs"></i>
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400">Pakistan location where you are available for site visits.</p>
+          </div>
+        </div>
+
+        <!-- Row 3: Years of Experience & Status Availability -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 block" for="id_experience">
+              Industry Experience
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9fa1ff]">
+                <i class="ti ti-hourglass-empty text-base"></i>
+              </span>
+              <select 
+                name="experience" 
+                id="id_experience"
+                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 font-semibold transition-all text-xs md:text-sm appearance-none cursor-pointer"
+                onchange="onFieldExperienceChange(this)"
+              >
+                {% for choice_val, choice_lbl, years_val in experience_choices %}
+                  <option value="{{ choice_val }}" {% if years_val == current_exp_years %}selected{% endif %}>{{ choice_lbl }}</option>
+                {% endfor %}
+              </select>
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <i class="ti ti-chevron-down text-xs"></i>
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400">Helps clients evaluate your professional skill seniority level.</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700 block">
+              Workverse Studio Availability Status
+            </label>
+            
+            <div class="bg-slate-50 border border-slate-100 p-3 rounded-xl flex items-center justify-between">
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold text-slate-800 block">Accepting Callback Proposals</span>
+                <span class="text-[10px] text-slate-400 font-medium block">Toggle off to pause incoming scheduler alerts.</span>
+              </div>
+              
+              <!-- Custom iOS slider checkbox toggle -->
+              <label class="relative inline-flex items-center cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  name="is_available" 
+                  id="id_is_available" 
+                  class="sr-only peer" 
+                  {% if profile.is_available %}checked{% endif %}
+                  onchange="onFieldAvailabilityChange(this)"
+                >
+                <div class="w-10 h-6 bg-slate-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-[#9fa1ff]/30 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#9fa1ff]"></div>
+              </label>
+            </div>
+            <p class="text-[10px] text-slate-400">You can also quickly toggle this status directly on your dashboard.</p>
+          </div>
+        </div>
+
+        <!-- Row 4: Biography / Specialties descriptive Text Box -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-700 block" for="id_bio">
+            Technical Trade Biography &amp; Specialties
+          </label>
+          <div class="relative">
+            <textarea 
+              name="bio" 
+              id="id_bio" 
+              class="w-full p-4 bg-slate-50 hover:bg-slate-50/50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 font-semibold transition-all resize-none text-xs md:text-sm"
+              rows="4" 
+              placeholder="Describe your domestic repairs, plumbing experience, specific toolset, warranty offers, and scheduling parameters..."
+              oninput="onFieldBioChange(this)"
+            >{{ profile.bio|default:'' }}</textarea>
+          </div>
+          <div class="flex justify-between items-center text-[10px] text-slate-400 mt-1">
+            <span>Introduce yourself. Describe what sets your service quality apart.</span>
+            <span id="char-counter">0 / 400 characters</span>
+          </div>
+        </div>
+
+        <!-- Form CTAs buttons block -->
+        <div class="pt-4 border-t border-slate-50 flex flex-col sm:flex-row items-center gap-3">
+          <button 
+            type="submit" 
+            class="w-full sm:w-auto font-display font-black text-xs text-white bg-slate-950 hover:bg-slate-800 px-6 py-3.5 rounded-xl cursor-pointer transition-all hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <i class="ti ti-device-floppy text-sm"></i>
+            <span>Save Profile Updates</span>
+          </button>
+          
+          <a 
+            href="{% url 'worker_dashboard' %}"
+            class="w-full sm:w-auto text-center font-display font-black text-xs text-slate-600 bg-slate-100 hover:bg-slate-200/80 px-6 py-3.5 rounded-xl transition"
+          >
+            Cancel &amp; Exit
+          </a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Dynamic validation & live view updating
+  function onFieldNameChange(el) {
+    const val = el.value.trim();
+    const previewEl = document.getElementById('preview-name');
+    const previewInitialsEl = document.getElementById('preview-initials');
+    
+    if (previewEl) {
+      previewEl.textContent = val || 'Your Name';
+    }
+    
+    if (previewInitialsEl && val) {
+      const parts = val.split(' ');
+      let initials = '';
+      if (parts.length >= 2) {
+        initials = (parts[0][0] + parts[1][0]).toUpperCase();
+      } else {
+        initials = val.substring(0, 2).toUpperCase();
+      }
+      previewInitialsEl.textContent = initials;
+    }
+  }
+
+  function onFieldCategoryChange(el) {
+    const val = el.value;
+    const badgeEl = document.getElementById('preview-badge-category');
+    const tableEl = document.getElementById('preview-table-category');
+    
+    if (badgeEl) badgeEl.textContent = val;
+    if (tableEl) tableEl.textContent = val + ' Service';
+  }
+
+  function onFieldCityChange(el) {
+    const val = el.value;
+    const badgeEl = document.getElementById('preview-badge-city');
+    const tableEl = document.getElementById('preview-table-city');
+    
+    if (badgeEl) badgeEl.textContent = val;
+    if (tableEl) tableEl.textContent = val;
+  }
+
+  function onFieldExperienceChange(el) {
+    const selectedText = el.options[el.selectedIndex].text;
+    const tableEl = document.getElementById('preview-table-experience');
+    
+    if (tableEl) tableEl.textContent = selectedText;
+  }
+
+  function onFieldBioChange(el) {
+    const val = el.value.trim();
+    const previewEl = document.getElementById('preview-bio-paragraph');
+    const labelEl = document.getElementById('char-counter');
+    
+    if (previewEl) {
+      previewEl.textContent = val ? '"' + val + '"' : 'No custom bio message specified. You can edit your profile details using the fields on the right to attract premium clients.';
+    }
+    
+    if (labelEl) {
+      labelEl.textContent = val.length + ' / 400 characters';
+    }
+  }
+
+  function onFieldAvailabilityChange(el) {
+    const isChecked = el.checked;
+    const textEl = document.getElementById('preview-status-text');
+    const dotEl = document.getElementById('preview-status-dot');
+    
+    if (textEl) {
+      textEl.textContent = isChecked ? 'Available' : 'Busy';
+    }
+    
+    if (dotEl) {
+      if (isChecked) {
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+      } else {
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-rose-500';
+      }
+    }
+  }
+
+  // Pre-seed some counters on start
+  document.addEventListener('DOMContentLoaded', () => {
+    const bioTextarea = document.getElementById('id_bio');
+    if (bioTextarea) {
+      const len = bioTextarea.value.trim().length;
+      const labelEl = document.getElementById('char-counter');
+      if (labelEl) {
+        labelEl.textContent = len + ' / 400 characters';
+      }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Workverse — On-Demand Pakistani Local Specialists{% endblock %}</title>
+
+  <!-- ─── FONTS & STYLING CDNS ─── -->
+  <!-- Premium Font Pairings (Space Grotesk & Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind Play CDN for easy development setup representing high fidelity styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tabler Icons CSS CDN (Specified in tech stack specs!) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Styling adjustments to match exact theme preferences and custom soft aesthetic */
+    body {
+      background-color: #d9f9df; /* Exact Mint Brand Tone */
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Elegant scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(159, 161, 255, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(159, 161, 255, 0.5);
+    }
+  </style>
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen md:h-screen md:overflow-hidden bg-[#d9f9df] text-slate-800 antialiased flex flex-col md:flex-row">
+
+  <!-- ─── 1. REUSABLE ASIDE NAVIGATION (SIDEBAR) ─── -->
+  {% include "includes/sidebar.html" %}
+
+  <!-- ─── 2. MAIN APPLICATION CONTENT PORT AREA ─── -->
+  <div class="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-hidden">
+    
+    <!-- ─── TOPBAR HEADER ─── -->
+    <div class="shrink-0">
+      <header class="w-full h-16 bg-white/70 backdrop-blur-md border-b border-[#b5baff]/20 px-6 flex items-center justify-between z-10">
+        <!-- Left Header: Mobile Menu and Section Title -->
+        <div class="flex items-center gap-4">
+          <!-- Mobile Hamburger Toggle button -->
+          <button 
+            id="mobile-sidebar-toggle"
+            class="md:hidden p-2 rounded-xl text-slate-600 hover:bg-white border border-[#b5baff]/25 transition"
+            onclick="toggleMobileSidebar()"
+          >
+            <i class="ti ti-menu-2 text-xl"></i>
+          </button>
+          
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block leading-none">Pakistan Labor Platform</span>
+            <h2 class="font-display font-bold text-lg text-slate-900 leading-tight">
+              {% block header_title %}
+                {% if request.resolver_match.url_name == 'find_workers' %}
+                  Find Professional Service Specialists
+                {% elif request.resolver_match.url_name == 'my_bookings' %}
+                  Manage My Service Bookings
+                {% elif request.resolver_match.url_name == 'contact' %}
+                  Contact Customer Support
+                {% elif request.resolver_match.url_name == 'worker_dashboard' %}
+                  Worker Command Center Dashboard
+                {% elif request.resolver_match.url_name == 'worker_profile_edit' %}
+                  Update Professional Profile Trade Bio
+                {% elif request.resolver_match.url_name == 'admin_overview' %}
+                  Platform Administration Dashboard Overview
+                {% elif request.resolver_match.url_name == 'admin_users' %}
+                  Administration: Registered Users Database
+                {% elif request.resolver_match.url_name == 'admin_workers' %}
+                  Administration: Registered Specialist Workers
+                {% elif request.resolver_match.url_name == 'admin_bookings' %}
+                  Administration: Customer Bookings & Pipeline
+                {% else %}
+                  Workverse Specialized Services
+                {% endif %}
+              {% endblock %}
+            </h2>
+          </div>
+        </div>
+
+        <!-- Right Header: Status Indicator or Quick Actions -->
+        <div class="flex items-center gap-3">
+          <!-- Active Status Indicator -->
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#d9f9df] text-emerald-800 rounded-full text-xs font-semibold border border-emerald-500/10">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Karachi / Lahore / Islamabad</span>
+          </div>
+
+          <!-- Help Icon link -->
+          <a 
+            href="{% url 'contact' %}" 
+            class="p-2 rounded-xl text-slate-500 hover:text-[#9fa1ff] hover:bg-white/80 border border-transparent hover:border-[#b5baff]/30 transition"
+            title="Contact Support Center"
+          >
+            <i class="ti ti-help text-lg"></i>
+          </a>
+          
+          <!-- User Quick Circle status if logged in -->
+          {% if request.user.is_authenticated %}
+            <div class="h-8 w-px bg-slate-200 mx-1"></div>
+            <div class="flex items-center gap-2">
+              <span class="hidden md:inline text-xs font-bold text-slate-700">{{ request.user.name }}</span>
+              <div class="w-8 h-8 rounded-xl bg-[#b5baff]/20 text-[#9fa1ff] font-bold flex items-center justify-center text-xs border border-[#b5baff]/40">
+                {{ request.user.name|slice:":1" }}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </header>
+
+      <script>
+        // Simple responsive sidebar toggle helper
+        function toggleMobileSidebar() {
+          const sidebar = document.querySelector('aside');
+          if (sidebar) {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('flex');
+          }
+        }
+      </script>
+    </div>
+
+    <!-- ─── 3. SYSTEM FLASH MESSAGES (TOAST ALERTS) ─── -->
+    {% if messages %}
+    <div class="px-6 pt-4 max-w-7xl w-full mx-auto shrink-0">
+      {% include "includes/messages_toast.html" %}
+    </div>
+    {% endif %}
+
+    <!-- ─── 4. PRIMARY INJECTED WORKSPACE CONTENT ─── -->
+    <main class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6 md:overflow-y-auto">
+      {% block content %}
+        <!-- Default Fallback View in case child block gets empty -->
+        <div class="bg-white/70 backdrop-blur-sm p-12 rounded-[2rem] border border-[#b5baff]/25 text-center max-w-xl mx-auto my-12">
+          <div class="w-16 h-16 bg-[#aee2ff]/20 text-[#9fa1ff] rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="ti ti-loader animate-spin"></i>
+          </div>
+          <h3 class="font-display font-bold text-xl text-slate-900">Workverse Mainframe Underway</h3>
+          <p class="text-slate-500 text-sm mt-2">Create content view templates in Django and override the <strong>content</strong> block.</p>
+        </div>
+      {% endblock %}
+    </main>
+
+  </div>
+
+  {% block extra_js %}{% endblock %}
+
+  <!-- Universal Scroll Position Retention -->
+  <script>
+    (function() {
+      const scrollKeyPrefix = 'scroll-y-' + window.location.pathname;
+      const mainEl = document.querySelector('main');
+
+      // Restore scroll positions on page load
+      window.addEventListener('DOMContentLoaded', () => {
+        if (mainEl) {
+          const savedMainScroll = sessionStorage.getItem(scrollKeyPrefix + '-main');
+          if (savedMainScroll !== null) {
+            mainEl.scrollTop = parseInt(savedMainScroll, 10);
+          }
+        }
+        const savedWinScroll = sessionStorage.getItem(scrollKeyPrefix + '-window');
+        if (savedWinScroll !== null) {
+          window.scrollTo(0, parseInt(savedWinScroll, 10));
+        }
+      });
+
+      // Save scroll positions right before page leaves
+      window.addEventListener('beforeunload', () => {
+        if (mainEl) {
+          sessionStorage.setItem(scrollKeyPrefix + '-main', mainEl.scrollTop);
+        }
+        sessionStorage.setItem(scrollKeyPrefix + '-window', window.scrollY);
+      });
+    })();
+  </script>
+</body>
+</html>

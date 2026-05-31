@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Find Local Specialists — Workverse{% endblock %}
+
+{% block header_title %}Find Professional Service Specialists{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ─── 1. INTEGRATED DIRECTORY FILTER & SEARCH ─── -->
+  <form method="GET" action="{% url 'find_workers' %}" id="filter-form" class="bg-white/80 backdrop-blur-md border border-[#b5baff]/30 p-5 md:p-6 rounded-[2rem] shadow-sm space-y-4">
+    <div class="flex items-center gap-2">
+      <div class="w-2.5 h-2.5 rounded-full bg-[#9fa1ff]"></div>
+      <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+        Directory Search &amp; Advanced Filtering
+      </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Keyword search -->
+      <div class="relative">
+        <label for="search" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1 mb-1">Search Specialist Name or Bio</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="ti ti-search text-base"></i>
+          </div>
+          <input 
+            type="text" 
+            name="search" 
+            id="search"
+            placeholder="e.g. , electrician, wiring..." 
+            value="{{ current_search }}"
+            class="w-full pl-10 pr-4 py-2 bg-white border border-[#b5baff]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 transition-all font-semibold"
+          >
+        </div>
+      </div>
+
+      <!-- City selector -->
+      <div>
+        <label for="city" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1 mb-1">Select Operation City</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="ti ti-map-pin text-base"></i>
+          </div>
+          <select 
+            name="city" 
+            id="city"
+            onchange="this.form.submit()"
+            class="w-full pl-10 pr-8 py-2 bg-white border border-[#b5baff]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 transition-all font-semibold appearance-none cursor-pointer"
+          >
+            <option value="">All active Pakistani cities</option>
+            {% for city_val, city_name in city_choices %}
+              {% if current_city == city_val %}
+                <option value="{{ city_val }}" selected>{{ city_name }}</option>
+              {% else %}
+                <option value="{{ city_val }}">{{ city_name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
+            <i class="ti ti-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Availability selector -->
+      <div>
+        <label for="status" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1 mb-1">Select Status</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="ti ti-activity text-base"></i>
+          </div>
+          <select 
+            name="status" 
+            id="status"
+            onchange="this.form.submit()"
+            class="w-full pl-10 pr-8 py-2 bg-white border border-[#b5baff]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 transition-all font-semibold appearance-none cursor-pointer"
+          >
+            <option value="" {% if not current_status %}selected{% endif %}>All statuses</option>
+            <option value="Available" {% if current_status == 'Available' %}selected{% endif %}>Available / Active</option>
+            <option value="Busy" {% if current_status == 'Busy' %}selected{% endif %}>Busy</option>
+          </select>
+          <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
+            <i class="ti ti-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit and reset action triggers -->
+      <div class="flex items-end gap-2">
+        <button 
+          type="submit" 
+          class="flex-1 bg-[#9fa1ff] hover:bg-indigo-500 text-white font-bold py-2 rounded-xl shadow-lg shadow-[#9fa1ff]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer h-10 text-sm"
+        >
+          <i class="ti ti-filter text-base"></i>
+          <span>Apply Parameters</span>
+        </button>
+        
+        {% if current_search or current_city or current_status or current_category != 'All' %}
+          <a 
+            href="{% url 'find_workers' %}" 
+            class="px-3 bg-slate-50 hover:bg-slate-150 border border-slate-200 text-slate-600 hover:text-slate-900 font-bold rounded-xl transition-all flex items-center justify-center h-10 cursor-pointer"
+            title="Reset active filtering parameters"
+          >
+            <i class="ti ti-refresh text-base"></i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Hidden variable for selected category tabs filtering -->
+    <input type="hidden" name="category" id="hidden-category" value="{{ current_category }}">
+  </form>
+
+  <!-- ─── 2. CATEGORIES FILTER TAB ROWS ─── -->
+  <div class="space-y-2">
+    <div class="flex items-center justify-between px-1">
+      <span class="text-[10px] font-bold text-[#9fa1ff] uppercase tracking-widest block">Service Customization Categories</span>
+      {% if current_category != 'All' %}
+        <button 
+          type="button"
+          onclick="setCategory('All')" 
+          class="text-[11px] font-bold text-slate-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
+        >
+          <i class="ti ti-x text-xs"></i>
+          <span>Reset Category filter</span>
+        </button>
+      {% endif %}
+    </div>
+
+    <!-- Category selector grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+      {% for cat_val, cat_label, cat_icon in category_options %}
+        <button
+          type="button"
+          onclick="setCategory('{{ cat_val }}')"
+          class="p-4 rounded-[1.75rem] text-center flex flex-col items-center justify-center gap-2 border transition-all cursor-pointer 
+          {% if current_category == cat_val %}
+            bg-[#9fa1ff] border-[#9fa1ff] text-white font-bold shadow-lg shadow-[#9fa1ff]/25 scale-102
+          {% else %}
+            bg-white/80 border-[#b5baff]/25 text-slate-600 hover:border-[#9fa1ff] hover:bg-white hover:shadow-xs
+          {% endif %}"
+        >
+          <div class="p-2 rounded-xl transition-colors 
+            {% if current_category == cat_val %}
+              bg-white/20 text-white
+            {% else %}
+              bg-[#9fa1ff]/10 text-[#9fa1ff]
+            {% endif %}">
+            <i class="ti {{ cat_icon }} text-xl"></i>
+          </div>
+          <span class="text-[11px] uppercase tracking-wider truncate max-w-full font-bold leading-none block">
+            {{ cat_label }}
+          </span>
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── 3. WORKER DIRECTORY RESULTS ─── -->
+  <div class="space-y-4">
+    <!-- Header results status bar -->
+    <div class="flex items-center justify-between px-1">
+      <h3 class="font-display font-black text-lg text-slate-800 tracking-tight flex items-center gap-2">
+        <span>Available Trade Specialists</span>
+        <span class="text-xs bg-[#b5baff]/20 text-indigo-950 font-bold px-2 py-0.5 rounded-full">{{ workers_count }} matches</span>
+      </h3>
+      
+      {% if current_category != 'All' or current_city or current_search %}
+        <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-800 bg-[#d9f9df] border border-emerald-500/15 px-3 py-1 rounded-full flex items-center gap-1.5 animate-pulse">
+          <i class="ti ti-checks text-xs"></i>
+          <span>Active filter list</span>
+        </span>
+      {% endif %}
+    </div>
+
+    {% if not workers %}
+      <!-- Empty state container for specialists directories -->
+      <div class="bg-white/70 backdrop-blur-xs rounded-[2rem] border border-[#b5baff]/20 p-12 text-center max-w-2xl mx-auto space-y-4">
+        <div class="w-16 h-16 bg-indigo-50 text-[#9fa1ff] rounded-2xl flex items-center justify-center text-3xl mx-auto border border-[#b5baff]/15 shadow-inner">
+          <i class="ti ti-users-minus"></i>
+        </div>
+        <div class="space-y-1">
+          <h4 class="font-display font-bold text-lg text-slate-900">No Specialists listed here yet</h4>
+          <p class="text-slate-500 text-sm max-w-md mx-auto">None of our registered partners match your combination of category, search criteria, and operation city. Try expanding fields or viewing all.</p>
+        </div>
+        <a 
+          href="{% url 'find_workers' %}"
+          class="inline-flex items-center gap-2 bg-[#9fa1ff] hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-md"
+        >
+          <i class="ti ti-refresh"></i>
+          <span>Reload complete directory list</span>
+        </a>
+      </div>
+    {% else %}
+      
+      <!-- Primary grid listings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for worker in workers %}
+          <div class="bg-white rounded-[2rem] p-5 border border-transparent hover:border-[#b5baff]/40 hover:shadow-xl transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden group">
+            
+            <!-- Context card background accent -->
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-slate-100/50 to-transparent -z-10 group-hover:scale-110 transition-transform"></div>
+
+            <a href="{% url 'worker_detail' worker.id %}" class="block space-y-3 flex-1">
+              <!-- Header / Identity info -->
+              <div class="space-y-3 flex-1">
+                <div class="flex items-start justify-between">
+                  <div class="flex items-center gap-3">
+                    <!-- Specialist Initials Container -->
+                    <div class="w-12 h-12 rounded-[1.25rem] bg-[#9fa1ff]/15 text-[#9fa1ff] font-extrabold font-display flex items-center justify-center text-lg border border-[#9fa1ff]/10">
+                      {{ worker.initials }}
+                    </div>
+                    <div>
+                      <h4 class="font-display font-bold text-base text-slate-900 group-hover:text-[#9fa1ff] transition-colors flex items-center gap-1.5 leading-none">
+                        <span>{{ worker.name }}</span>
+                        {% if worker.is_verified %}
+                          <span class="text-emerald-500 hover:scale-110 transition-transform" title="Verified Trade Specialist">
+                            <i class="ti ti-shield-check text-base"></i>
+                          </span>
+                        {% endif %}
+                      </h4>
+                      <p class="text-xs text-slate-400 font-bold mt-1 tracking-wide flex items-center gap-1.5">
+                        <span class="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600">{{ worker.category }}</span>
+                        <span>•</span>
+                        <span class="flex items-center gap-0.5"><i class="ti ti-map-pin text-[11px]"></i> {{ worker.city }}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Live status sticker badge -->
+                  {% if worker.status == 'Busy' %}
+                    <span class="bg-amber-50 text-amber-800 border border-amber-500/10 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1" title="User is currently busy or fully booked">
+                      <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                      Busy
+                    </span>
+                  {% else %}
+                    <span class="bg-emerald-50 text-emerald-800 border border-emerald-500/10 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1" title="User is active and available">
+                      <span class="w-1 h-1 bg-emerald-500 rounded-full animate-ping"></span>
+                      Available
+                    </span>
+                  {% endif %}
+                </div>
+
+                <!-- Complete, beautifully styled biography section without half-cut constraints -->
+                <div class="pt-2">
+                  <h5 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Expert Profile Bio</h5>
+                  <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl">
+                    <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                      {% if worker.bio %}
+                        {{ worker.bio }}
+                      {% else %}
+                        <em>Specialist profile is in onboarding; dynamic trade bio description will be provided shortly.</em>
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Specialist trade credentials -->
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                  <div class="bg-slate-50/50 rounded-xl p-2.5 border border-slate-100 text-center">
+                    <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wide">Work Experience</span>
+                    <p class="text-xs font-bold text-slate-800 font-display mt-0.5">
+                      {% if worker.experience %}
+                        {{ worker.experience }}
+                      {% else %}
+                        No experience specified
+                      {% endif %}
+                    </p>
+                  </div>
+                  <div class="bg-slate-50/50 rounded-xl p-2.5 border border-slate-100 text-center">
+                    <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wide">Client Rating</span>
+                    <p class="text-xs font-bold text-amber-500 font-display flex items-center justify-center gap-0.5 mt-0.5">
+                      <i class="ti ti-star-filled"></i>
+                      <span>
+                        {% if worker.rating %}
+                          {{ worker.rating }}
+                        {% else %}
+                          4.8 (Global Default)
+                        {% endif %}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            <!-- Footer Booking Actions Area -->
+            <div class="pt-4 border-t border-slate-100/80 flex items-center justify-between gap-2.5">
+              <div class="text-left">
+                <p class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider leading-none">Deal Valuation</p>
+                <!-- Clearly specifies completely offline negotiation without preset price tags -->
+                <span class="text-xs font-black text-slate-700 font-display mt-0.5 inline-block leading-none bg-blue-50 text-blue-800 px-2 py-1 rounded">
+                  Discuss on Callback
+                </span>
+              </div>
+
+              <!-- Quick callback booking action target -->
+              {% if worker.is_current_user %}
+                <span class="bg-slate-100 border border-slate-200 text-slate-400 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5" title="You cannot book your own specialist profile">
+                  <i class="ti ti-user-exclamation text-sm"></i>
+                  <span>Your Profile</span>
+                </span>
+              {% else %}
+                <button 
+                  onclick="openBookingForm('{{ worker.id }}', '{{ worker.name }}', '{{ worker.category }}')"
+                  class="bg-indigo-50 hover:bg-[#9fa1ff] text-[#9fa1ff] hover:text-white border border-[#9fa1ff]/20 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs group-hover:shadow cursor-pointer active:scale-95"
+                >
+                  <i class="ti ti-phone-call text-sm"></i>
+                  <span>Request Callback Proposal</span>
+                </button>
+              {% endif %}
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Metadata element for decoupled Javascript state handling to prevent linter errors -->
+{% if request.user.is_authenticated %}
+<div id="auth-metadata" class="hidden" data-authenticated="true" data-login-url="{% url 'login' %}?next={% url 'find_workers' %}"></div>
+{% else %}
+<div id="auth-metadata" class="hidden" data-authenticated="false" data-login-url="{% url 'login' %}?next={% url 'find_workers' %}"></div>
+{% endif %}
+
+<!-- ─── 4. INTERACTIVE DISCUSS BUDGET & BOOKING POPUP MODAL ─── -->
+<div id="booking-modal" class="fixed inset-0 z-50 overflow-hidden hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeBookingForm()"></div>
+  
+  <div class="bg-white rounded-[2.5rem] border border-[#b5baff]/30 shadow-2xl p-6 md:p-8 w-full max-w-md relative z-10 space-y-4">
+    <!-- Header -->
+    <div class="flex justify-between items-start">
+      <div class="space-y-1">
+        <span class="text-[10px] text-[#9fa1ff] font-bold tracking-widest uppercase block">Direct Offline Deal</span>
+        <h4 class="font-display font-black text-xl text-slate-900 leading-tight">Request Callback Session</h4>
+      </div>
+      <button 
+        onclick="closeBookingForm()"
+        class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-800 transition"
+      >
+        <i class="ti ti-x text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Description -->
+    <p class="text-xs text-slate-600 leading-relaxed font-semibold">
+      Our system follows an offline service model. Once you send this request, <strong id="modal-worker-name" class="text-slate-900">the specialist</strong> will receive automatic notification and call you to align on budget, task specifications, and your visual workspace requirements before final activation.
+    </p>
+
+    <!-- Interactive Form -->
+    <form method="POST" action="{% url 'my_bookings' %}" class="space-y-3.5">
+      {% csrf_token %}
+      <!-- Hidden targets -->
+      <input type="hidden" name="action" value="create">
+      <input type="hidden" name="worker_id" id="modal-worker-id">
+
+      <!-- Service Category static review -->
+      <div class="space-y-1 text-xs">
+        <span class="text-[10px] font-bold text-slate-400 uppercase block tracking-wide px-1">Selected Specialty</span>
+        <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl font-bold text-slate-800 flex items-center gap-1.5">
+          <i class="ti ti-user-check text-[#9fa1ff]"></i>
+          <span id="modal-worker-category">Electrician</span>
+        </div>
+      </div>
+
+      <!-- Problem statement description -->
+      <div class="space-y-1">
+        <label for="notes" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block px-1">Task Details &amp; Proposed Budget</label>
+        <textarea 
+          name="notes" 
+          id="notes"
+          required
+          rows="3"
+          placeholder="e.g. Broken pipeline behind water heater. Suggesting PKR 1,500 budget, call me as soon as possible."
+          class="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#9fa1ff]/30 focus:border-[#9fa1ff] text-slate-900 text-xs md:text-sm font-semibold resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Terms clarification -->
+      <div class="bg-indigo-50/50 p-3 rounded-xl border border-[#b5baff]/25 text-[10px] text-indigo-950 font-semibold leading-relaxed">
+        📞 Calling rules: Ensure you are logged in to submit call proposals. The specialist will reach you on your registered phone number.
+      </div>
+
+      <!-- Action submission row -->
+      <div class="pt-1 flex gap-3">
+        <button 
+          type="button" 
+          onclick="closeBookingForm()"
+          class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-2 rounded-xl text-xs transition"
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit"
+          class="flex-1 bg-[#9fa1ff] hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs shadow-md shadow-[#9fa1ff]/20 transition cursor-pointer"
+        >
+          Request Phone Booking
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Simple functional scripts to handle UI reactive parameters
+  function setCategory(catId) {
+    document.getElementById('hidden-category').value = catId;
+    document.getElementById('filter-form').submit();
+  }
+
+  // Pre-fill fields for Callback Booking Modal
+  function openBookingForm(workerId, workerName, workerCategory) {
+    const meta = document.getElementById('auth-metadata');
+    const isAuthenticated = meta ? meta.getAttribute('data-authenticated') === 'true' : false;
+    
+    if (!isAuthenticated) {
+      // Redirect unauthenticated clients directly to auth via metadata login URL
+      const loginUrl = meta ? meta.getAttribute('data-login-url') : '/login/';
+      window.location.href = loginUrl;
+      return;
+    }
+
+    document.getElementById('modal-worker-id').value = workerId;
+    document.getElementById('modal-worker-name').textContent = workerName;
+    document.getElementById('modal-worker-category').textContent = workerCategory;
+
+    const modal = document.getElementById('booking-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeBookingForm() {
+    const modal = document.getElementById('booking-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+</script>
+{% endblock %}

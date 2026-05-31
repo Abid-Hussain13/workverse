@@ -1,0 +1,161 @@
+<!-- templates/includes/sidebar.html -->
+{% load static %}
+
+<aside class="w-full md:w-64 md:h-screen bg-white/60 backdrop-blur-md border-b md:border-b-0 md:border-r border-[#b5baff]/30 flex flex-col shrink-0">
+  
+  <!-- Brand Logo Header -->
+  <div class="p-4 border-b border-[#b5baff]/20" style="padding: 1rem; border-bottom: 1px solid rgba(181, 186, 255, 0.2)">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-[#9fa1ff] rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-[#9fa1ff]/30 italic font-display">
+        W
+      </div>
+      <div>
+        <h1 class="font-display font-black text-lg tracking-tight text-slate-900 leading-none" style="font-family: 'Space Grotesk', sans-serif; font-weight: 900;">Workverse</h1>
+        <span class="text-[11px] text-[#9fa1ff] font-bold tracking-wider uppercase">Natural Tones UI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Nav items wrapper -->
+  <div class="px-3 py-4 flex-1 space-y-4 overflow-y-auto" style="padding-left: 0.75rem; padding-right: 0.75rem; padding-top: 1rem; padding-bottom: 1rem; flex: 1 1 0%;">
+    
+    <!-- Section: Client/Discover -->
+    <div class="space-y-1">
+      <span class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Discover</span>
+      <nav class="space-y-1">
+        <a 
+          href="{% url 'find_workers' %}" 
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'find_workers' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+        >
+          <i class="ti ti-search text-[#9fa1ff] text-base"></i>
+          <span>Find workers</span>
+        </a>
+        
+        <a 
+          href="{% url 'my_bookings' %}" 
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'my_bookings' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+        >
+          <i class="ti ti-calendar text-[#9fa1ff] text-base"></i>
+          <span class="flex-1">My bookings</span>
+          {% if request.user.is_authenticated and not request.session.bookings_viewed and request.resolver_match.url_name != 'my_bookings' %}
+            <span class="w-2.5 h-2.5 rounded-full bg-[#9fa1ff] animate-pulse border-2 border-white shadow-sm flex-shrink-0"></span>
+          {% endif %}
+        </a>
+      </nav>
+    </div>
+
+    <!-- Section: For Workers -->
+    <div class="space-y-1">
+      <span class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">For Workers</span>
+      <nav class="space-y-1">
+        {% if request.user.is_authenticated and request.user.is_worker %}
+          <a 
+            href="{% url 'worker_dashboard' %}" 
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'worker_dashboard' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+          >
+            <i class="ti ti-layout-dashboard text-[#9fa1ff] text-base"></i>
+            <span>Dashboard</span>
+          </a>
+          <a 
+            href="{% url 'worker_profile_edit' %}" 
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'worker_profile_edit' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+          >
+            <i class="ti ti-user-edit text-[#9fa1ff] text-base"></i>
+            <span>My profile</span>
+          </a>
+        {% endif %}
+        {% if not request.user.is_authenticated or not request.user.is_worker %}
+          <a 
+            href="{% url 'become_worker' %}" 
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'become_worker' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+          >
+            <i class="ti ti-tools text-[#9fa1ff] text-base"></i>
+            <span>Become a Worker</span>
+          </a>
+        {% endif %}
+      </nav>
+    </div>
+
+    <!-- Section: Administration (Restricted to is_staff) -->
+    {% if request.user.is_authenticated and request.user.is_staff %}
+    <div class="space-y-1">
+      <span class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Platform Admin</span>
+      <nav class="space-y-1">
+        <a 
+          href="{% url 'admin_overview' %}" 
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_overview' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+        >
+          <i class="ti ti-chart-bar text-[#9fa1ff] text-base"></i>
+          <span>Overview</span>
+        </a>
+        <a 
+          href="{% url 'admin_users' %}" 
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_users' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+        >
+          <i class="ti ti-users text-[#9fa1ff] text-base"></i>
+          <span>Users database</span>
+        </a>
+        <a 
+          href="{% url 'admin_workers' %}" 
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_workers' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+        >
+          <i class="ti ti-id text-[#9fa1ff] text-base"></i>
+          <span>Workers list</span>
+        </a>
+        <a 
+          href="{% url 'admin_bookings' %}" 
+          class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_bookings' %}bg-white border border-[#b5baff]/40 text-slate-900 shadow-xs{% else %}text-slate-600 hover:bg-white hover:text-slate-950 hover:shadow-2xs{% endif %}"
+        >
+          <i class="ti ti-list text-[#9fa1ff] text-base"></i>
+          <span>All bookings state</span>
+        </a>
+      </nav>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- User Card Area Footer -->
+  <div class="p-4 border-t border-[#b5baff]/25 bg-white/40">
+    {% if request.user.is_authenticated %}
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-[#b5baff]/30 text-slate-800 flex items-center justify-center font-display font-bold text-sm uppercase">
+          {{ request.user.name|slice:":2" }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-slate-900 truncate">{{ request.user.name }}</p>
+          <span class="text-[10px] font-semibold text-slate-500 bg-white border border-[#b5baff]/30 px-1.5 py-0.5 rounded-md inline-block uppercase mt-0.5">
+            {% if request.user.is_staff %}Admin{% endif %}
+            {% if not request.user.is_staff and request.user.is_worker %}Worker{% endif %}
+            {% if not request.user.is_staff and not request.user.is_worker %}Client{% endif %}
+          </span>
+        </div>
+        <a 
+          href="{% url 'logout' %}" 
+          title="Sign out"
+          class="p-1.5 rounded-md hover:bg-white/80 text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <i class="ti ti-logout text-[#9fa1ff]"></i>
+        </a>
+      </div>
+    {% else %}
+      <div class="space-y-2">
+        <p class="text-xs text-slate-400 font-medium text-center">Inspiration Workspace</p>
+        <div class="grid grid-cols-2 gap-2">
+          <a 
+            href="{% url 'login' %}" 
+            class="px-3 py-1.5 text-xs text-center border border-[#b5baff]/30 hover:bg-white font-semibold rounded-lg text-slate-700 block transition-all"
+          >
+            Log In
+          </a>
+          <a 
+            href="{% url 'signup' %}" 
+            class="px-3 py-1.5 text-xs text-center bg-[#9fa1ff] hover:bg-[#b5baff] text-white font-semibold rounded-lg shadow-sm block transition-all"
+          >
+            Sign Up
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</aside>

@@ -1,0 +1,4 @@
+Reviews Total: 3
+Review ID: 3 - Rating: 2 (<class 'int'>) - Comment: he is not listening to me
+Review ID: 2 - Rating: 5 (<class 'int'>) - Comment: nice work
+Review ID: 1 - Rating: 4 (<class 'int'>) - Comment: he did nice work. nice guy. recommended

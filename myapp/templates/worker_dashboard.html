@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Worker Studio Dashboard — Workverse{% endblock %}
+{% block header_title %}Specialist Workspace Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- ================= MASTER DASHBOARD HEADER & QUICK TOGGLE ================= -->
+  <div class="bg-gradient-to-br from-white to-slate-50/50 backdrop-blur-md p-6 rounded-[2rem] border border-[#b5baff]/30 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+    <div class="space-y-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#9fa1ff] animate-pulse"></span>
+        <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest font-mono">Specialist Dashboard</span>
+      </div>
+      <h3 class="font-display font-black text-2xl text-slate-950 tracking-tight leading-none">
+        Welcome Back, {{ request.user.name|default:request.user.email }}!
+      </h3>
+      <p class="text-xs text-slate-500 font-medium max-w-xl">
+        Manage your active trade callback requests, monitor service performance metrics, and configure your live booking availability below.
+      </p>
+    </div>
+
+    <!-- Live Status / Availability Toggle -->
+    <div class="bg-white/90 border border-[#b5baff]/20 p-4 rounded-2xl shadow-2xs flex flex-wrap items-center gap-4 w-full lg:w-auto">
+      <div class="flex items-center gap-2.5">
+        {% if profile.is_available %}
+          <span class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase block leading-none">Status</span>
+            <strong class="text-xs font-bold text-slate-900">Ready &amp; Accepting Calls</strong>
+          </div>
+        {% else %}
+          <span class="relative flex h-3 w-3">
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+          </span>
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase block leading-none">Status</span>
+            <strong class="text-xs font-bold text-slate-900">Busy / Offline</strong>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="border-l border-slate-100 h-8 hidden sm:block"></div>
+
+      <form method="POST" action="{% url 'worker_dashboard' %}" class="w-full sm:w-auto">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle_availability">
+        <button 
+          type="submit"
+          class="w-full sm:w-auto text-center font-bold px-4 py-2 rounded-xl text-xs cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 {% if profile.is_available %}bg-slate-900 hover:bg-slate-800 text-white shadow-md{% else %}bg-[#9fa1ff]/10 hover:bg-[#9fa1ff]/20 text-[#9fa1ff] border border-[#9fa1ff]/20{% endif %}"
+        >
+          <i class="ti {% if profile.is_available %}ti-circle-off{% else %}ti-circle-check{% endif %} text-sm"></i>
+          <span>{% if profile.is_available %}Switch to Offline{% else %}Go Available Now{% endif %}</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= ANALYTICAL PERFORMANCE INDEX CARDS ================= -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- CARD 1: INCOMING CALL PROPOSALS -->
+    <div class="bg-white p-5 rounded-3xl border border-[#b5baff]/20 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Incoming calls</span>
+        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center">
+          <i class="ti ti-download text-base"></i>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-2xl font-black text-slate-900 font-display leading-none">{{ pending_proposals }}</h4>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Pending callback confirmations</p>
+      </div>
+    </div>
+
+    <!-- CARD 2: ONGOING DEALS -->
+    <div class="bg-white p-5 rounded-3xl border border-[#b5baff]/20 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Ongoing contracts</span>
+        <div class="w-8 h-8 rounded-lg bg-[#9fa1ff]/14 text-[#9fa1ff] flex items-center justify-center">
+          <i class="ti ti-clock text-base"></i>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-2xl font-black text-slate-900 font-display leading-none">{{ active_proposals }}</h4>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Negotiated calls in-progress</p>
+      </div>
+    </div>
+
+    <!-- CARD 3: FINISHED DEALS -->
+    <div class="bg-white p-5 rounded-3xl border border-[#b5baff]/20 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Finished work</span>
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center">
+          <i class="ti ti-circle-check text-base"></i>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-2xl font-black text-slate-900 font-display leading-none">{{ completed_proposals }}</h4>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Total jobs verified done</p>
+      </div>
+    </div>
+
+    <!-- CARD 4: REPUTATION SCORE -->
+    <div class="bg-white p-5 rounded-3xl border border-[#b5baff]/20 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Trust rating</span>
+        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
+          <i class="ti ti-star text-base"></i>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-2xl font-black text-slate-900 font-display leading-none flex items-baseline gap-1">
+          <span>{{ avg_rating }}</span>
+          <span class="text-[11px] text-slate-400 font-bold">/5</span>
+        </h4>
+        <p class="text-[10px] text-slate-500 font-semibold mt-1">Based on {{ reviews_count }} review{{ reviews_count|pluralize }}</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= MAIN TWO-COLUMN WORK DETAILS GRID ================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- LEFT SIDE: ACTIVE TASKS & CALLBACK INBOX (COL SPAN 2) -->
+    <div class="lg:col-span-2 space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h4 class="font-display font-black text-base text-slate-900 tracking-tight flex items-center gap-1.5">
+          <i class="ti ti-mail-forward text-[#9fa1ff]"></i>
+          <span>Direct Callback Proposal Inbox</span>
+        </h4>
+        <span class="bg-indigo-50 text-[#9fa1ff] border border-[#9fa1ff]/15 text-[10px] font-bold px-2 py-0.5 rounded-full">
+          {{ my_proposals|length }} total
+        </span>
+      </div>
+
+      {% if not my_proposals %}
+        <div class="bg-white/60 backdrop-blur-md p-10 rounded-[2rem] border border-[#b5baff]/25 text-center py-16">
+          <div class="w-16 h-16 bg-[#9fa1ff]/10 text-[#9fa1ff] rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4 border border-[#9fa1ff]/20">
+            <i class="ti ti-inbox"></i>
+          </div>
+          <h4 class="font-display font-bold text-base text-slate-900">Your proposal clipboard is empty</h4>
+          <p class="text-slate-500 text-xs mt-1.5 leading-relaxed max-w-sm mx-auto">
+            When clients find you on the Discover catalog and request phone callbacks, their specifications will appear here instantly.
+          </p>
+        </div>
+      {% else %}
+        <div class="space-y-4">
+          {% for booking in my_proposals %}
+            {% if booking.status == 'Pending' or booking.status == 'Accepted' %}
+              <a 
+                href="{% url 'my_bookings' %}?tab=received#booking-{{ booking.id }}" 
+                class="block bg-white rounded-[2rem] p-5 md:p-6 border border-[#b5baff]/25 hover:border-[#9fa1ff]/40 shadow-xs hover:shadow-md transition-all duration-300 space-y-4 cursor-pointer hover:ring-2 hover:ring-[#9fa1ff]/20 text-left"
+              >
+            {% else %}
+              <div class="bg-white rounded-[2rem] p-5 md:p-6 border border-[#b5baff]/25 hover:border-[#9fa1ff]/40 shadow-xs hover:shadow-md transition-all duration-300 space-y-4">
+            {% endif %}
+              
+              <!-- Card Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#9fa1ff] font-extrabold flex items-center justify-center text-sm border border-[#9fa1ff]/10">
+                    {{ booking.client_name|slice:":2"|upper }}
+                  </div>
+                  <div>
+                    <h5 class="text-sm font-bold text-slate-900 leading-none">{{ booking.client_name }}</h5>
+                    <span class="text-[10px] text-slate-400 font-bold font-mono mt-1 uppercase flex items-center gap-1">
+                      <i class="ti ti-mail text-[11px]"></i> {{ booking.client_email }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Status Tags & Link Trigger -->
+                <div class="flex items-center gap-2 flex-wrap">
+                  {% if booking.status == 'Pending' %}
+                    <span class="bg-amber-50 text-amber-800 border border-amber-500/10 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full inline-flex items-center gap-1 leading-none">
+                      <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                      Pending Confirmation
+                    </span>
+                    <span class="bg-indigo-50 text-[#9fa1ff] border border-[#9fa1ff]/20 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full inline-flex items-center gap-1 leading-none">
+                      Manage Call <i class="ti ti-arrow-up-right"></i>
+                    </span>
+                  {% elif booking.status == 'Accepted' %}
+                    <span class="bg-emerald-50 text-emerald-800 border border-emerald-500/10 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full inline-flex items-center gap-1 leading-none">
+                      <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                      Deal Active
+                    </span>
+                    <span class="bg-indigo-50 text-[#9fa1ff] border border-[#9fa1ff]/20 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full inline-flex items-center gap-1 leading-none">
+                      Manage Call <i class="ti ti-arrow-up-right"></i>
+                    </span>
+                  {% elif booking.status == 'Completed' %}
+                    <span class="bg-slate-50 text-[#9fa1ff] border border-[#9fa1ff]/10 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full inline-flex items-center gap-1 leading-none">
+                      <i class="ti ti-circle-check"></i>
+                      Completed
+                    </span>
+                  {% else %}
+                    <span class="bg-rose-50 text-rose-800 border border-rose-200 text-[9px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full leading-none">
+                      {{ booking.status }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Communication Contacts Panel -->
+              {% if booking.status == 'Pending' %}
+                <div class="bg-amber-50/20 border border-amber-500/10 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="space-y-0.5">
+                    <span class="text-[9px] font-extrabold text-amber-600 uppercase tracking-widest block font-mono">Callback Requirement</span>
+                    <strong class="text-sm font-mono text-slate-900 block font-black">{{ booking.client_phone }}</strong>
+                  </div>
+                  <p class="text-[11px] text-slate-500 font-semibold leading-normal max-w-sm sm:text-right">
+                    Contact first directly and agree on details before accepting or declining the request.
+                  </p>
+                </div>
+              {% else %}
+                <div class="bg-slate-50 border border-slate-100 p-3.5 rounded-xl flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-1.5 font-semibold text-slate-600">
+                    <i class="ti ti-phone text-[#9fa1ff] text-base"></i>
+                    <span>Contact Line: <strong class="text-slate-900 font-mono ml-1">{{ booking.client_phone }}</strong></span>
+                  </div>
+                  <span class="text-[10px] text-slate-400 font-bold font-mono">DIRECT DEAL</span>
+                </div>
+              {% endif %}
+
+              <!-- Client notes details -->
+              <div class="space-y-1.5">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Submitted Specifications &amp; Parameters</span>
+                <p class="text-xs text-slate-700 bg-slate-50 border border-slate-100 p-4 rounded-2xl leading-relaxed whitespace-pre-wrap font-medium">
+                  {{ booking.notes }}
+                </p>
+              </div>
+
+              <!-- Customer Feedback Review -->
+              {% if booking.status == 'Completed' and booking.review %}
+                <div class="bg-indigo-50/50 border border-[#9fa1ff]/10 p-4 rounded-2xl space-y-1">
+                  <span class="text-[9px] font-extrabold text-[#9fa1ff] uppercase tracking-wider block">Completed Service Feedback Rating</span>
+                  <div class="flex items-center gap-1">
+                    <span class="text-amber-500 font-bold text-sm">
+                      {% if booking.review.rating == 5 %}★★★★★{% elif booking.review.rating == 4 %}★★★★{% elif booking.review.rating == 3 %}★★★{% elif booking.review.rating == 2 %}★★{% else %}★{% endif %}
+                    </span>
+                    <span class="text-[10px] font-bold text-slate-500">({{ booking.review.rating }}/5)</span>
+                  </div>
+                  {% if booking.review.comment %}
+                    <p class="text-xs text-slate-600 italic font-medium">"{{ booking.review.comment }}"</p>
+                  {% else %}
+                    <p class="text-[10px] text-slate-400 italic">Left a rating review without a text message comment on this booking.</p>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+            {% if booking.status == 'Pending' or booking.status == 'Accepted' %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </div>
+
+    <!-- RIGHT SIDE: SPECIALIST PROFILE CARD & REVIEWS FEED (COL SPAN 1) -->
+    <div class="space-y-6">
+      
+      <!-- PROFILE CREDENTIALS WIDGET -->
+      <div class="bg-white p-6 rounded-[2rem] border border-[#b5baff]/25 shadow-2xs space-y-5">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-50">
+          <h4 class="font-display font-black text-xs text-slate-900 tracking-tight uppercase">Specialist Profile Code</h4>
+          <a 
+            href="{% url 'worker_profile_edit' %}"
+            class="text-[#9fa1ff] hover:text-indigo-600 text-[10px] uppercase font-bold flex items-center gap-1 transition"
+          >
+            <i class="ti ti-edit text-xs"></i>
+            <span>Edit Information</span>
+          </a>
+        </div>
+
+        <div class="flex items-center gap-3.5">
+          <div class="w-14 h-14 bg-indigo-50 border border-[#9fa1ff]/20 text-[#9fa1ff] rounded-[1.25rem] font-display font-black text-lg flex items-center justify-center relative shadow-xs shrink-0">
+            {{ request.user.name|slice:":2"|upper }}
+            {% if profile.is_verified %}
+              <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-[#9fa1ff] rounded-full border-2 border-white flex items-center justify-center text-white" title="Verified Professional Specialist">
+                <i class="ti ti-rosette-filled text-[11px] leading-none"></i>
+              </span>
+            {% endif %}
+          </div>
+          <div class="min-w-0">
+            <h5 class="font-display font-bold text-sm text-slate-950 truncate flex items-center gap-1.5 leading-none mb-1">
+              <span>{{ request.user.name|default:request.user.email }}</span>
+            </h5>
+            <div class="flex flex-wrap gap-1">
+              <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-500 uppercase">{{ category_name }}</span>
+              <span class="bg-indigo-50 px-1.5 py-0.5 rounded text-[9px] font-bold text-indigo-500 uppercase">{{ city_name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail attributes metrics description -->
+        <div class="space-y-2.5 pt-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+              <i class="ti ti-tools text-[#9fa1ff]"></i>
+              Category specialty:
+            </span>
+            <strong class="text-slate-800 font-bold text-right">{{ category_name }}</strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+              <i class="ti ti-map-pin text-[#9fa1ff]"></i>
+              Active City:
+            </span>
+            <strong class="text-slate-800 font-bold text-right">{{ city_name }}</strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+              <i class="ti ti-hourglass-empty text-[#9fa1ff]"></i>
+              Registered experience:
+            </span>
+            <strong class="text-slate-800 font-bold text-right">{{ profile.experience_years }} Year{{ profile.experience_years|pluralize }}</strong>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-50 pt-3">
+          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono block mb-1">Description Bio</span>
+          <p class="text-xs text-slate-500 italic leading-relaxed font-medium">
+            "{{ profile.bio|default:'No custom bio message specified. You can edit your profile details using the links above to attract premium clients.' }}"
+          </p>
+        </div>
+
+        {% if not profile.is_verified %}
+          <div class="bg-[#9fa1ff]/10 border border-[#9fa1ff]/20 p-4 rounded-2xl space-y-1">
+            <h6 class="text-[10px] font-black text-[#9fa1ff] uppercase tracking-wider flex items-center gap-1">
+              <i class="ti ti-rosette text-xs"></i>
+              Verification Progress
+            </h6>
+            <p class="text-[11px] text-slate-700 font-medium leading-normal">
+              Complete 15 jobs to earn your professional verification badge.
+            </p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- LATEST REVIEWS FEED PANEL -->
+      <div class="bg-white p-6 rounded-[2rem] border border-[#b5baff]/25 shadow-2xs space-y-4">
+        <h4 class="font-display font-black text-xs text-slate-900 tracking-tight uppercase pb-1 border-b border-slate-50 flex items-center justify-between">
+          <span>Client Satisfaction Feed</span>
+          <span class="bg-slate-100 text-slate-500 font-mono text-[9px] font-bold px-1.5 py-0.5 rounded">
+            LATEST 5
+          </span>
+        </h4>
+
+        {% if not recent_reviews %}
+          <div class="text-center py-8 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+            <i class="ti ti-star-off text-slate-300 text-2xl mb-1.5 block"></i>
+            <span class="text-[11px] font-bold text-slate-400 block">No feedback posted yet</span>
+            <p class="text-[10px] text-slate-400 leading-normal max-w-[160px] mx-auto mt-0.5">Reviews appear on completed transactions.</p>
+          </div>
+        {% else %}
+          <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+            {% for rev in recent_reviews %}
+              <div class="bg-slate-50 border border-slate-100/60 p-3.5 rounded-2xl space-y-1 hover:border-[#9fa1ff]/30 transition-all">
+                <div class="flex items-center justify-between text-[11px] font-bold">
+                  <span class="text-slate-900 truncate max-w-[100px]">{{ rev.reviewer_name }}</span>
+                  <div class="flex items-center text-[10px] tracking-wide">
+                    <span class="text-amber-500 font-bold">{{ rev.stars_filled }}</span>{% if rev.stars_empty %}<span class="text-slate-300 font-bold">{{ rev.stars_empty }}</span>{% endif %}
+                  </div>
+                </div>
+                {% if rev.comment %}
+                  <p class="text-xs text-slate-600 italic font-medium leading-normal">"{{ rev.comment }}"</p>
+                {% else %}
+                  <p class="text-[10px] text-slate-400 italic">Left a rating review only.</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

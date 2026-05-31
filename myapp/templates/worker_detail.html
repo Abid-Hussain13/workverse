@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl mx-auto">
+  <!-- Top Navigation & Return Anchor -->
+  <div class="flex items-center justify-between">
+    <a 
+      href="{% url 'find_workers' %}" 
+      class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#9fa1ff] transition-colors"
+    >
+      <i class="ti ti-arrow-left text-sm"></i>
+      <span>Back to specialists directory</span>
+    </a>
+    
+    <!-- Verified Token if applicable -->
+    {% if worker.is_verified %}
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider border border-emerald-100">
+        <i class="ti ti-circle-check"></i>
+        <span>Verified Specialist</span>
+      </span>
+    {% endif %}
+  </div>
+
+  <!-- Specialist Main Cover card -->
+  <div class="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+    <!-- Header identity row -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="flex items-center gap-4">
+        <!-- Huge Initials Avatar Box -->
+        <div class="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-[#9fa1ff]/10 text-[#9fa1ff] font-black font-display flex items-center justify-center text-xl md:text-2xl border border-[#9fa1ff]/20">
+          {{ worker.initials }}
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black text-slate-900 leading-tight">
+            {{ worker.name }}
+          </h1>
+          <p class="text-xs text-slate-400 font-bold mt-1 tracking-wide flex items-center gap-2">
+            <span class="bg-[#9fa1ff]/5 px-2.5 py-1 rounded-lg text-[#9fa1ff] font-extrabold">{{ worker.category }}</span>
+            <span>•</span>
+            <span class="flex items-center gap-1"><i class="ti ti-map-pin"></i> {{ worker.city }}</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Live state badge and pricing -->
+      <div class="flex items-center gap-3 md:self-start">
+        {% if worker.status == 'Busy' %}
+          <span class="bg-amber-50 text-amber-800 border border-amber-500/10 text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse">
+            <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
+            Busy or fully booked
+          </span>
+        {% else %}
+          <span class="bg-emerald-50 text-emerald-800 border border-emerald-500/10 text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            Available For Callbacks
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8 pt-6 border-t border-slate-100">
+      <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100/60">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Service Rating</span>
+        <div class="flex items-center gap-1.5 mt-1">
+          <i class="ti ti-star-filled text-amber-400 text-base"></i>
+          <span class="text-lg font-black text-slate-850 font-display">{{ worker.rating }}</span>
+          <span class="text-xs text-slate-400 font-medium">/ 5.0</span>
+        </div>
+      </div>
+      
+      <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100/60">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Completed Contracts</span>
+        <div class="flex items-center gap-1.5 mt-1">
+          <i class="ti ti-briefcase text-[#9fa1ff] text-base"></i>
+          <span class="text-lg font-black text-slate-850 font-display">{{ reviews_count }}</span>
+          <span class="text-xs text-slate-400 font-medium font-sans">Jobs logged</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100/60 col-span-2 md:col-span-1">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Trade Experience</span>
+        <div class="flex items-center gap-1.5 mt-1">
+          <i class="ti ti-certificate text-emerald-550 text-base"></i>
+          <span class="text-lg font-black text-slate-850 font-display">{{ worker.experience }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description bio area -->
+    <div class="mt-6 space-y-2">
+      <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Specialist biography</h3>
+      <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100/60">
+        <p class="text-sm text-slate-600 leading-relaxed font-semibold">
+          {{ worker.bio }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Body Content Split layout (Hiring panel & review dashboard) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Booking Proposal Desk -->
+    <div class="md:col-span-1 space-y-4">
+      <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xs space-y-4 md:sticky md:top-6">
+        <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+          <i class="ti ti-phone-call text-[#9fa1ff]"></i>
+          <span>Request Callback</span>
+        </h3>
+        
+        <p class="text-xs text-slate-500 leading-relaxed font-medium">
+          Send a detailed callback request to <strong>{{ worker.name }}</strong> regarding your domestic job requirements.
+        </p>
+
+        {% if worker.is_current_user %}
+          <div class="bg-[#9fa1ff]/10 text-[#9fa1ff] rounded-2xl p-4 text-[11px] font-bold border border-[#9fa1ff]/20">
+            <i class="ti ti-alert-circle text-sm mb-1.5 block"></i>
+            <span>This is your own profile. Technicians are restricted from sending callback requests to themselves.</span>
+          </div>
+        {% else %}
+          <form method="POST" class="space-y-3.5">
+            {% csrf_token %}
+            <div>
+              <label class="block text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-2">Job description & instructions</label>
+              <textarea 
+                name="notes" 
+                rows="4" 
+                required 
+                placeholder="Give a short overview of the work or ask for an estimate (e.g., Leaking pipe in bathroom ceiling block B)..." 
+                class="w-full text-xs font-medium bg-slate-50 border border-slate-200 focus:border-[#9fa1ff] focus:ring-1 focus:ring-[#9fa1ff] focus:outline-none p-3 rounded-2xl transition placeholder-slate-400 leading-relaxed"
+              ></textarea>
+            </div>
+
+            <button 
+              type="submit" 
+              class="w-full bg-[#9fa1ff] hover:bg-indigo-600 text-white font-bold py-3 rounded-2xl text-xs transition active:scale-95 shadow-xs cursor-pointer flex items-center justify-center gap-2"
+            >
+              <i class="ti ti-send text-xs"></i>
+              <span>Send Booking Button</span>
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Client Reviews and Testimonials List -->
+    <div class="md:col-span-2 space-y-4">
+      <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-xs space-y-4">
+        <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+          <i class="ti ti-messages text-[#9fa1ff]"></i>
+          <span>Client Reviews List</span>
+          <span class="text-xs bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full">{{ reviews_count }}</span>
+        </h3>
+
+        <!-- Reviews container -->
+        <div class="space-y-4 divide-y divide-slate-100">
+          {% for r in reviews %}
+            <div class="pt-4 {% if forloop.first %}pt-0{% endif %} space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-850 flex items-center gap-1.5">
+                    <i class="ti ti-user text-slate-400 text-[11px]"></i>
+                    {{ r.reviewer_name }}
+                  </h4>
+                  {% if r.created_at %}
+                    <span class="text-[9px] text-slate-400 font-bold font-mono tracking-wide mt-0.5 block">
+                      {{ r.created_at|date:"M d, Y" }}
+                    </span>
+                  {% endif %}
+                </div>
+                
+                <!-- Rating indicator -->
+                <div class="text-amber-400 text-xs tracking-wider flex items-center bg-amber-50/60 border border-amber-200/20 py-1 px-2.5 rounded-lg">
+                  <span class="text-[10px] font-black text-amber-600 font-mono mr-1.5">{{ r.rating }} ★</span>
+                  <div class="flex items-center text-[10px] tracking-wide">
+                    <span class="text-amber-400 font-bold">{{ r.stars_filled }}</span>{% if r.stars_empty %}<span class="text-slate-300 font-bold">{{ r.stars_empty }}</span>{% endif %}
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Review text comments -->
+              <p class="text-xs text-slate-600 leading-relaxed font-semibold bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100/40">
+                {% if r.comment %}
+                  {{ r.comment }}
+                {% else %}
+                  <em class="text-slate-400 font-medium">No written comment was provided with this rating.</em>
+                {% endif %}
+              </p>
+            </div>
+          {% empty %}
+            <div class="py-8 text-center space-y-2">
+              <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-300">
+                <i class="ti ti-messages text-lg"></i>
+              </div>
+              <p class="text-xs font-bold text-slate-400 mt-2">No reviews available</p>
+              <p class="text-[10px] text-slate-450 leading-relaxed">This technician hasn't received any review logs yet. Be the first to book and rate their craft!</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
