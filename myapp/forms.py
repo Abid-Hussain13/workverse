@@ -178,7 +178,11 @@ class BecomeWorkerForm(forms.Form):
                 ('Carpenter', 'Carpenter'),
                 ('Other', 'Other'),
             ]
-        self.fields['category'].choices = categories
+        categories_non_other = [c for c in categories if c[0].lower() != 'other']
+        categories_other = [c for c in categories if c[0].lower() == 'other']
+        if not categories_other:
+            categories_other = [('Other', 'Other')]
+        self.fields['category'].choices = categories_non_other + categories_other
 
         # Dynamically load cities from City DB model
         try:
@@ -195,7 +199,11 @@ class BecomeWorkerForm(forms.Form):
                 ('Rawalpindi', 'Rawalpindi'),
                 ('Other', 'Other'),
             ]
-        self.fields['city'].choices = cities
+        cities_non_other = [c for c in cities if c[0].lower() != 'other']
+        cities_other = [c for c in cities if c[0].lower() == 'other']
+        if not cities_other:
+            cities_other = [('Other', 'Other')]
+        self.fields['city'].choices = cities_non_other + cities_other
 
     def clean_bio(self):
         bio = self.cleaned_data.get('bio', '')

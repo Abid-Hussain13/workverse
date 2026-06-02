@@ -1,0 +1,1 @@
+POST params: {'csrfmiddlewaretoken': ['7LDyCfuf6iMcgZw2APRQBPr8rUurW2s2rIDnEBoKbUafzVyn8il9LaMw4LkaoJle'], 'action': ['rate'], 'booking_id': ['1'], 'rating_1': ['4'], 'comment': ['Did great job. Nice guy']}

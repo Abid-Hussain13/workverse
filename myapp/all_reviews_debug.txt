@@ -1,4 +1,2 @@
-Total reviews in database: 3
-ID: 3 | Rating: 2 (<class 'int'>) | Comment: he is not listening to me
-ID: 2 | Rating: 5 (<class 'int'>) | Comment: nice work
-ID: 1 | Rating: 4 (<class 'int'>) | Comment: he did nice work. nice guy. recommended
+Total reviews in database: 1
+ID: 1 | Rating: 4 (<class 'int'>) | Comment: Did great job. Nice guy

@@ -2,283 +2,248 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Become a Specialist — Workverse</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Become a Specialist — Workverse</title>
+  
+  <!-- Premium Font Pairings (Space Grotesk & Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind Play CDN for high fidelity design development -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tabler Icons CSS CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
-    <!-- Premium Font Pairings (Space Grotesk & Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;900&display=swap"
-        rel="stylesheet">
-
-    <!-- Tailwind Play CDN for high fidelity design development -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Tabler Icons CSS CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Space Grotesk', 'sans-serif'],
-                    },
-                }
-            }
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
         }
-    </script>
+      }
+    }
+  </script>
 
-    <style>
-        body {
-            background-color: #d9f9df;
-            /* Workverse Mint Green */
-            font-family: 'Inter', sans-serif;
-        }
-
-        .font-display {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-    </style>
+  <style>
+    body {
+      background-color: #d9f9df; /* Workverse Mint Green */
+      font-family: 'Inter', sans-serif;
+    }
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
 </head>
-
 <body class="h-screen overflow-hidden flex items-center justify-center p-4 md:p-6 relative">
 
-    <!-- Ambient Glow Decorative Blobs -->
-    <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#9fa1ff]/20 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#b5baff]/30 blur-3xl pointer-events-none">
+  <!-- Ambient Glow Decorative Blobs -->
+  <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#9fa1ff]/20 blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#b5baff]/30 blur-3xl pointer-events-none"></div>
+
+  <!-- Primary Centered Glass Card -->
+  <div class="w-full max-w-lg bg-white/60 backdrop-blur-lg rounded-[2.5rem] border border-[#b5baff]/30 shadow-2xl p-6 md:py-6 md:px-8 relative z-10 flex flex-col justify-between max-h-[95vh] overflow-y-auto">
+    
+    {% if is_unauthenticated %}
+    <!-- ─── CASE 1: UNAUTHENTICATED / SCREENER ─── -->
+    <div>
+      <!-- Branding & Mode Header -->
+      <div class="text-center mb-5">
+        <a href="{% url 'find_workers' %}" class="inline-flex w-10 h-10 bg-[#9fa1ff] hover:bg-indigo-500 rounded-2xl items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#9fa1ff]/30 italic font-display mx-auto mb-2 transition-all">
+          W
+        </a>
+        <h1 class="font-display font-black text-xl text-slate-900 tracking-tight leading-none">Become a Specialist</h1>
+        <p class="text-[10px] text-[#9fa1ff] font-bold tracking-widest uppercase mt-1">Join Pakistan's specialized talent network</p>
+      </div>
+
+      <!-- Descriptive Value Prop Box -->
+      <div class="bg-indigo-50/50 border border-[#b5baff]/20 rounded-2xl p-4 text-center mb-5">
+        <p class="text-xs text-slate-700 leading-relaxed font-semibold">
+          Register your residential / domestic technical trade services. Connect with premium local clients, receive pre-booked service schedules, and grow your local client network.
+        </p>
+      </div>
+
+      <!-- Path Selection Buttons -->
+      <div class="space-y-4">
+        
+        <!-- Action Card: Log In First -->
+        <a 
+          href="{% url 'login' %}?next={% url 'become_worker' %}" 
+          class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#b5baff]/30 shadow-sm hover:border-[#9fa1ff] hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group cursor-pointer"
+        >
+          <div class="w-12 h-12 rounded-xl bg-[#9fa1ff]/10 text-[#9fa1ff] flex items-center justify-center group-hover:bg-[#9fa1ff] group-hover:text-white transition-all text-2xl">
+            <i class="ti ti-login"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <h4 class="font-display font-bold text-sm text-slate-900">Sign In to Your Workspace</h4>
+            <p class="text-[11px] text-slate-500 font-medium">Already have a member profile? Authenticate to continue</p>
+          </div>
+          <i class="ti ti-chevron-right text-slate-400 group-hover:text-slate-800 transition-colors"></i>
+        </a>
+
+        <!-- Action Card: Create Fresh Account -->
+        <a 
+          href="{% url 'signup' %}?next={% url 'become_worker' %}" 
+          class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#b5baff]/30 shadow-sm hover:border-[#9fa1ff] hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group cursor-pointer"
+        >
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all text-2xl">
+            <i class="ti ti-user-plus"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <h4 class="font-display font-bold text-sm text-slate-900">Create a New Account</h4>
+            <p class="text-[11px] text-slate-500 font-medium font-semibold">New member of our system? Create account instantly</p>
+          </div>
+          <i class="ti ti-chevron-right text-slate-400 group-hover:text-slate-800 transition-colors"></i>
+        </a>
+
+      </div>
     </div>
 
-    <!-- Primary Centered Glass Card -->
-    <div
-        class="w-full max-w-lg bg-white/60 backdrop-blur-lg rounded-[2.5rem] border border-[#b5baff]/30 shadow-2xl p-6 md:py-6 md:px-8 relative z-10 flex flex-col justify-between max-h-[95vh] overflow-y-auto">
+    <!-- Screener Navigation footer -->
+    <div class="mt-6 pt-3 border-t border-[#b5baff]/25 text-center text-[11px] text-slate-600 font-semibold flex items-center justify-center px-1">
+      <a href="{% url 'find_workers' %}" class="text-slate-400 hover:text-slate-700 font-bold flex items-center gap-0.5 group">
+        <i class="ti ti-chevron-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+        <span>Go Back Home</span>
+      </a>
+    </div>
 
-        {% if is_unauthenticated %}
-        <!-- ─── CASE 1: UNAUTHENTICATED / SCREENER ─── -->
-        <div>
-            <!-- Branding & Mode Header -->
-            <div class="text-center mb-5">
-                <a href="{% url 'find_workers' %}"
-                    class="inline-flex w-10 h-10 bg-[#9fa1ff] hover:bg-indigo-500 rounded-2xl items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#9fa1ff]/30 italic font-display mx-auto mb-2 transition-all">
-                    W
-                </a>
-                <h1 class="font-display font-black text-xl text-slate-900 tracking-tight leading-none">Become a
-                    Specialist</h1>
-                <p class="text-[10px] text-[#9fa1ff] font-bold tracking-widest uppercase mt-1">Join Pakistan's
-                    specialized talent network</p>
-            </div>
+    {% else %}
+    <!-- ─── CASE 2: AUTHENTICATED / ONBOARDING FORM ─── -->
+    <div>
+      <!-- Branding & Mode Header -->
+      <div class="text-center mb-3">
+        <a href="{% url 'find_workers' %}" class="inline-flex w-10 h-10 bg-[#9fa1ff] hover:bg-indigo-500 rounded-2xl items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#9fa1ff]/30 italic font-display mx-auto mb-1 transition-all">
+          W
+        </a>
+        <h1 class="font-display font-black text-xl text-slate-900 tracking-tight leading-none">Become a Specialist</h1>
+        <p class="text-[10px] text-[#9fa1ff] font-bold tracking-widest uppercase mt-0.5">Register your domestic technical skills</p>
+      </div>
 
-            <!-- Descriptive Value Prop Box -->
-            <div class="bg-indigo-50/50 border border-[#b5baff]/20 rounded-2xl p-4 text-center mb-5">
-                <p class="text-xs text-slate-700 leading-relaxed font-semibold">
-                    Register your residential / domestic technical trade services. Connect with premium local clients,
-                    receive pre-booked service schedules, and grow your local client network.
-                </p>
-            </div>
+      <!-- Active User Identification Tag -->
+      <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 mb-3 text-xs justify-center mx-auto max-w-max">
+        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <p class="text-slate-600 font-semibold">
+          Active Account: <span class="text-slate-900 font-bold">{% if request.user.name %}{{ request.user.name }}{% elif request.user.username %}{{ request.user.username }}{% else %}{{ request.user.email }}{% endif %}</span>
+        </p>
+      </div>
 
-            <!-- Path Selection Buttons -->
-            <div class="space-y-4">
+      <!-- Alert / Messages integration -->
+      {% if messages %}
+      <div class="mb-3">
+        {% include "includes/messages_toast.html" %}
+      </div>
+      {% endif %}
 
-                <!-- Action Card: Log In First -->
-                <a href="{% url 'login' %}?next={% url 'become_worker' %}"
-                    class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#b5baff]/30 shadow-sm hover:border-[#9fa1ff] hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group cursor-pointer">
-                    <div
-                        class="w-12 h-12 rounded-xl bg-[#9fa1ff]/10 text-[#9fa1ff] flex items-center justify-center group-hover:bg-[#9fa1ff] group-hover:text-white transition-all text-2xl">
-                        <i class="ti ti-login"></i>
-                    </div>
-                    <div class="flex-1 text-left">
-                        <h4 class="font-display font-bold text-sm text-slate-900">Sign In to Your Workspace</h4>
-                        <p class="text-[11px] text-slate-500 font-medium">Already have a member profile? Authenticate to
-                            continue</p>
-                    </div>
-                    <i class="ti ti-chevron-right text-slate-400 group-hover:text-slate-800 transition-colors"></i>
-                </a>
+      <!-- Core Onboarding Form -->
+      <form method="POST" class="space-y-3">
+        {% csrf_token %}
 
-                <!-- Action Card: Create Fresh Account -->
-                <a href="{% url 'signup' %}?next={% url 'become_worker' %}"
-                    class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#b5baff]/30 shadow-sm hover:border-[#9fa1ff] hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group cursor-pointer">
-                    <div
-                        class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all text-2xl">
-                        <i class="ti ti-user-plus"></i>
-                    </div>
-                    <div class="flex-1 text-left">
-                        <h4 class="font-display font-bold text-sm text-slate-900">Create a New Account</h4>
-                        <p class="text-[11px] text-slate-500 font-medium font-semibold">New member of our system? Create
-                            account instantly</p>
-                    </div>
-                    <i class="ti ti-chevron-right text-slate-400 group-hover:text-slate-800 transition-colors"></i>
-                </a>
-
-            </div>
-        </div>
-
-        <!-- Screener Navigation footer -->
-        <div
-            class="mt-6 pt-3 border-t border-[#b5baff]/25 text-center text-[11px] text-slate-600 font-semibold flex items-center justify-center px-1">
-            <a href="{% url 'find_workers' %}"
-                class="text-slate-400 hover:text-slate-700 font-bold flex items-center gap-0.5 group">
-                <i class="ti ti-chevron-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
-                <span>Go Back Home</span>
-            </a>
-        </div>
-
-        {% else %}
-        <!-- ─── CASE 2: AUTHENTICATED / ONBOARDING FORM ─── -->
-        <div>
-            <!-- Branding & Mode Header -->
-            <div class="text-center mb-3">
-                <a href="{% url 'find_workers' %}"
-                    class="inline-flex w-10 h-10 bg-[#9fa1ff] hover:bg-indigo-500 rounded-2xl items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#9fa1ff]/30 italic font-display mx-auto mb-1 transition-all">
-                    W
-                </a>
-                <h1 class="font-display font-black text-xl text-slate-900 tracking-tight leading-none">Become a
-                    Specialist</h1>
-                <p class="text-[10px] text-[#9fa1ff] font-bold tracking-widest uppercase mt-0.5">Register your domestic
-                    technical skills</p>
-            </div>
-
-            <!-- Active User Identification Tag -->
-            <div
-                class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 mb-3 text-xs justify-center mx-auto max-w-max">
-                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                <p class="text-slate-600 font-semibold">
-                    Active Account: <span class="text-slate-900 font-bold">{% if request.user.name %}
-                        {{ request.user.name }}{% elif request.user.username %}{{ request.user.username }}{% else %}{{
-                        request.user.email }}{% endif %}</span>
-                </p>
-            </div>
-
-            <!-- Alert / Messages integration -->
-            {% if messages %}
-            <div class="mb-3">
-                {% include "includes/messages_toast.html" %}
-            </div>
-            {% endif %}
-
-            <!-- Core Onboarding Form -->
-            <form method="POST" class="space-y-3">
-                {% csrf_token %}
-
-                <!-- Hidden fields / global errors if any -->
-                {% if form.non_field_errors %}
-                <div
-                    class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs font-semibold text-rose-950 space-y-1">
-                    {% for error in form.non_field_errors %}
-                    <p class="flex items-center gap-1.5">
-                        <i class="ti ti-alert-circle text-rose-500 text-sm"></i>
-                        {{ error }}
-                    </p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Specialty Category Select -->
-                    <div class="space-y-1">
-                        <label for="id_category"
-                            class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Specialty
-                            Category</label>
-                        <div class="relative">
-                            <div
-                                class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="ti ti-briefcase text-base"></i>
-                            </div>
-                            {{ form.category }}
-                        </div>
-                        {% if form.category.errors %}
-                        <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.category.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Metro City Select -->
-                    <div class="space-y-1">
-                        <label for="id_city"
-                            class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Metro
-                            City</label>
-                        <div class="relative">
-                            <div
-                                class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="ti ti-map-pin text-base"></i>
-                            </div>
-                            {{ form.city }}
-                        </div>
-                        {% if form.city.errors %}
-                        <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.city.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Experience Years Select -->
-                <div class="space-y-1">
-                    <label for="id_experience"
-                        class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Experience
-                        Level</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
-                            <i class="ti ti-clock text-base"></i>
-                        </div>
-                        {{ form.experience }}
-                    </div>
-                    {% if form.experience.errors %}
-                    <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.experience.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Professional Biography Description -->
-                <div class="space-y-1">
-                    <label for="id_bio"
-                        class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Professional
-                        Biography</label>
-                    {{ form.bio }}
-                    {% if form.bio.errors %}
-                    <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.bio.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Guarantee Statement indicator -->
-                <div class="flex items-start px-1 text-[11px] text-slate-600 mt-1">
-                    <label class="flex items-start gap-2 cursor-pointer select-none">
-                        <input type="checkbox" required checked
-                            class="w-3.5 h-3.5 rounded text-[#9fa1ff] border-slate-300 focus:ring-[#9fa1ff]/30 mt-0.5">
-                        <span>By registering, I confirm that all trade bio details and metro city operations are
-                            complete &amp; correct.</span>
-                    </label>
-                </div>
-
-                <!-- Primary Submit Action Button -->
-                <button type="submit"
-                    class="w-full bg-[#9fa1ff] hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-[#9fa1ff]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-1">
-                    <span>Become active worker</span>
-                    <i class="ti ti-arrow-right text-base"></i>
-                </button>
-
-            </form>
-        </div>
-
-        <!-- Onboarding Navigation footer -->
-        <div
-            class="mt-4 pt-3 border-t border-[#b5baff]/20 text-center text-[11px] text-slate-600 font-semibold flex items-center justify-between px-1">
-            <a href="{% url 'find_workers' %}"
-                class="text-slate-400 hover:text-slate-700 font-bold flex items-center gap-0.5 group">
-                <i class="ti ti-chevron-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
-                <span>Go Back Home</span>
-            </a>
-            <span class="text-slate-300">|</span>
-            <a href="{% url 'logout' %}"
-                class="text-rose-500 hover:text-rose-700 font-bold flex items-center gap-0.5 group">
-                <span>Log out of current session</span>
-                <i class="ti ti-logout text-xs group-hover:translate-x-0.5 transition-transform"></i>
-            </a>
-        </div>
+        <!-- Hidden fields / global errors if any -->
+        {% if form.non_field_errors %}
+          <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs font-semibold text-rose-950 space-y-1">
+            {% for error in form.non_field_errors %}
+              <p class="flex items-center gap-1.5">
+                <i class="ti ti-alert-circle text-rose-500 text-sm"></i>
+                {{ error }}
+              </p>
+            {% endfor %}
+          </div>
         {% endif %}
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Specialty Category Select -->
+          <div class="space-y-1">
+            <label for="id_category" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Specialty Category</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="ti ti-briefcase text-base"></i>
+              </div>
+              {{ form.category }}
+            </div>
+            {% if form.category.errors %}
+              <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.category.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Metro City Select -->
+          <div class="space-y-1">
+            <label for="id_city" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Metro City</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="ti ti-map-pin text-base"></i>
+              </div>
+              {{ form.city }}
+            </div>
+            {% if form.city.errors %}
+              <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.city.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Experience Years Select -->
+        <div class="space-y-1">
+          <label for="id_experience" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Experience Level</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="ti ti-clock text-base"></i>
+            </div>
+            {{ form.experience }}
+          </div>
+          {% if form.experience.errors %}
+            <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.experience.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Professional Biography Description -->
+        <div class="space-y-1">
+          <label for="id_bio" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block px-1">Professional Biography</label>
+          {{ form.bio }}
+          {% if form.bio.errors %}
+            <p class="text-[10px] font-semibold text-rose-600 px-1 mt-0.5">{{ form.bio.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Guarantee Statement indicator -->
+        <div class="flex items-start px-1 text-[11px] text-slate-600 mt-1">
+          <label class="flex items-start gap-2 cursor-pointer select-none">
+            <input type="checkbox" required checked class="w-3.5 h-3.5 rounded text-[#9fa1ff] border-slate-300 focus:ring-[#9fa1ff]/30 mt-0.5">
+            <span>By registering, I confirm that all trade bio details and metro city operations are complete &amp; correct.</span>
+          </label>
+        </div>
+
+        <!-- Primary Submit Action Button -->
+        <button 
+          type="submit"
+          class="w-full bg-[#9fa1ff] hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-[#9fa1ff]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-1"
+        >
+          <span>Become active worker</span>
+          <i class="ti ti-arrow-right text-base"></i>
+        </button>
+
+      </form>
     </div>
 
-</body>
+    <!-- Onboarding Navigation footer -->
+    <div class="mt-4 pt-3 border-t border-[#b5baff]/20 text-center text-[11px] text-slate-600 font-semibold flex items-center justify-between px-1">
+      <a href="{% url 'find_workers' %}" class="text-slate-400 hover:text-slate-700 font-bold flex items-center gap-0.5 group">
+        <i class="ti ti-chevron-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+        <span>Go Back Home</span>
+      </a>
+      <span class="text-slate-300">|</span>
+      <a href="{% url 'logout' %}" class="text-rose-500 hover:text-rose-700 font-bold flex items-center gap-0.5 group">
+        <span>Log out of current session</span>
+        <i class="ti ti-logout text-xs group-hover:translate-x-0.5 transition-transform"></i>
+      </a>
+    </div>
+    {% endif %}
 
+  </div>
+
+</body>
 </html>

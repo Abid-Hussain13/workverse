@@ -388,6 +388,30 @@
         dotEl.className = 'w-1.5 h-1.5 rounded-full bg-rose-500';
       }
     }
+
+    // Immediately sync with the database via AJAX POST
+    const csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfEl) {
+      const formData = new FormData();
+      formData.append('action', 'toggle_availability');
+      formData.append('is_available', isChecked ? 'true' : 'false');
+      formData.append('csrfmiddlewaretoken', csrfEl.value);
+      
+      fetch('{% url "worker_profile_edit" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Availability synced successfully:", data);
+      })
+      .catch(err => {
+        console.error("AJAX error syncing availability:", err);
+      });
+    }
   }
 
   // Pre-seed some counters on start

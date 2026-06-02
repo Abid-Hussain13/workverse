@@ -1,50 +1,55 @@
 <!-- templates/includes/messages_toast.html -->
 {% if messages %}
 <div class="space-y-3" id="django-messages-container">
-    {% for message in messages %}
-    <div class="flex items-center justify-between gap-3 p-4 rounded-2xl border text-sm font-semibold shadow-xs transition-all duration-300 md:max-w-2xl
+  {% for message in messages %}
+    <div 
+      class="flex items-center justify-between gap-3 p-4 rounded-2xl border text-sm font-semibold shadow-xs transition-all duration-300 md:max-w-2xl
         {% if message.tags == 'success' %}bg-[#d9f9df] border-emerald-500/20 text-emerald-950{% endif %}{% if message.tags == 'error' %}bg-red-50 border-red-500/20 text-red-950{% endif %}{% if message.tags == 'warning' %}bg-amber-50 border-amber-500/20 text-amber-950{% endif %}{% if message.tags != 'success' and message.tags != 'error' and message.tags != 'warning' %}bg-sky-50 border-sky-500/20 text-sky-950{% endif %}"
-        id="message-toast-{{ forloop.counter }}" role="alert">
-        <div class="flex items-center gap-2.5">
-            {% if message.tags == 'success' %}<i class="ti ti-circle-check text-emerald-600 text-lg"></i>{% endif %}
-            {% if message.tags == 'error' %}<i class="ti ti-circle-x text-red-600 text-lg"></i>{% endif %}
-            {% if message.tags == 'warning' %}<i class="ti ti-alert-triangle text-amber-600 text-lg"></i>{% endif %}
-            {% if message.tags != 'success' and message.tags != 'error' and message.tags != 'warning' %}<i
-                class="ti ti-info-circle text-sky-600 text-lg"></i>{% endif %}
-
-            <span>{{ message }}</span>
-        </div>
-
-        <!-- Close Button -->
-        <button type="button" class="text-slate-400 hover:text-slate-900 transition-colors p-1"
-            onclick="dismissMessage('message-toast-{{ forloop.counter }}')">
-            <i class="ti ti-x text-base"></i>
-        </button>
+      id="message-toast-{{ forloop.counter }}"
+      role="alert"
+    >
+      <div class="flex items-center gap-2.5">
+        {% if message.tags == 'success' %}<i class="ti ti-circle-check text-emerald-600 text-lg"></i>{% endif %}
+        {% if message.tags == 'error' %}<i class="ti ti-circle-x text-red-600 text-lg"></i>{% endif %}
+        {% if message.tags == 'warning' %}<i class="ti ti-alert-triangle text-amber-600 text-lg"></i>{% endif %}
+        {% if message.tags != 'success' and message.tags != 'error' and message.tags != 'warning' %}<i class="ti ti-info-circle text-sky-600 text-lg"></i>{% endif %}
+        
+        <span>{{ message }}</span>
+      </div>
+      
+      <!-- Close Button -->
+      <button 
+        type="button" 
+        class="text-slate-400 hover:text-slate-900 transition-colors p-1"
+        onclick="dismissMessage('message-toast-{{ forloop.counter }}')"
+      >
+        <i class="ti ti-x text-base"></i>
+      </button>
     </div>
-    {% endfor %}
+  {% endfor %}
 </div>
 
 <script>
-    // Automatic fade-out timer for flash messages (compiler friendly)
-    document.addEventListener('DOMContentLoaded', function () {
-        const toasts = document.querySelectorAll('[id^="message-toast-"]');
-        toasts.forEach(function (toast) {
-            setTimeout(function () {
-                dismissMessage(toast.id);
-            }, 5000);
-        });
+  // Automatic fade-out timer for flash messages (compiler friendly)
+  document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('[id^="message-toast-"]');
+    toasts.forEach(function(toast) {
+      setTimeout(function() {
+        dismissMessage(toast.id);
+      }, 5000);
     });
+  });
 
-    function dismissMessage(id) {
-        const element = document.getElementById(id);
-        if (element) {
-            // Clean slide-out animation before removal
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(-10px)';
-            setTimeout(function () {
-                element.remove();
-            }, 300);
-        }
+  function dismissMessage(id) {
+    const element = document.getElementById(id);
+    if (element) {
+      // Clean slide-out animation before removal
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(-10px)';
+      setTimeout(function() {
+        element.remove();
+      }, 300);
     }
+  }
 </script>
 {% endif %}

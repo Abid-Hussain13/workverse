@@ -134,7 +134,7 @@
                       <strong class="text-slate-900 font-mono text-sm ml-1">{{ booking.client_phone }}</strong>
                     </div>
                     <p class="text-[11px] text-slate-500 font-semibold leading-relaxed">
-                      call first and then after call that goes offline user can accept or decline offer
+                      call before accepting and declining offer
                     </p>
                   </div>
                 {% else %}
@@ -356,7 +356,7 @@
                         <div class="flex items-center gap-2 flex-wrap">
                           {% for star_val in "54321"|make_list %}
                             <label class="flex items-center gap-1.5 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#9fa1ff]/60 transition-all font-mono text-xs font-bold text-slate-700 active:scale-95">
-                              <input type="radio" name="rating" value="{{ star_val }}" required class="accent-[#9fa1ff]">
+                              <input type="radio" name="rating_{{ booking.id }}" value="{{ star_val }}" required class="accent-[#9fa1ff]">
                               <span>{{ star_val }} ★</span>
                             </label>
                           {% endfor %}

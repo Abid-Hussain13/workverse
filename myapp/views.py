@@ -2,6 +2,7 @@
 # Paste this file or add these views inside your Django app's views.py.
 
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from .forms import LoginForm, SignupForm, BecomeWorkerForm
@@ -101,6 +102,7 @@ def find_workers(request):
     Category = models['Category']
     City = models['City']
     WorkerProfile = models['WorkerProfile']
+    Review = models.get('Review')
 
     # 1. Resolve Category choices
     category_options = []
@@ -121,7 +123,12 @@ def find_workers(request):
         except Exception:
             pass
         
-    if not category_options:
+    if category_options:
+        # Move 'Other' category option to the end
+        cats_non_other = [cat for cat in category_options if cat[0].lower() != 'other']
+        cats_other = [cat for cat in category_options if cat[0].lower() == 'other']
+        category_options = cats_non_other + cats_other
+    else:
         category_options = [
             ('Plumber', 'Plumber', 'ti-droplet'),
             ('Electrician', 'Electrician', 'ti-bolt'),
@@ -153,7 +160,12 @@ def find_workers(request):
             ('Rawalpindi', 'Rawalpindi'),
         ]
     
-    if not any(c[0] == 'Other' for c in city_choices):
+    # Re-order to place any 'Other' city choices at the end
+    cities_non_other = [c for c in city_choices if c[0].lower() != 'other']
+    cities_other = [c for c in city_choices if c[0].lower() == 'other']
+    city_choices = cities_non_other + cities_other
+
+    if not any(c[0].lower() == 'other' for c in city_choices):
         city_choices.append(('Other', 'Other City'))
 
     # 3. Pull real workers from custom database Models
@@ -183,13 +195,24 @@ def find_workers(request):
                 # Compute status
                 status_str = 'Busy' if not p.is_available else 'Available'
                 
+                # Calculate real rating
+                calculated_rating = 0.0
+                if Review:
+                    try:
+                        p_reviews = Review.objects.filter(reviewee=u)
+                        p_reviews_count = p_reviews.count()
+                        if p_reviews_count > 0:
+                            calculated_rating = round(sum(r.rating for r in p_reviews) / p_reviews_count, 1)
+                    except Exception:
+                        pass
+                
                 real_workers.append({
                     'id': str(p.id),
                     'name': name,
                     'initials': initials,
                     'category': category_name,
                     'city': city_name,
-                    'rating': str(p.average_rating),
+                    'rating': str(calculated_rating),
                     'is_verified': p.is_verified,
                     'bio': p.bio or "Specialized domestic technician. Friendly service and professional results guaranteed.",
                     'experience': f"{p.experience_years} year" if p.experience_years == 1 else f"{p.experience_years} years",
@@ -792,7 +815,7 @@ def worker_dashboard(request):
     pending_proposals = 0
     active_proposals = 0
     completed_proposals = 0
-    avg_rating = 4.8
+    avg_rating = 0.0
     reviews_count = 0
     
     my_proposals = []
@@ -858,7 +881,7 @@ def worker_dashboard(request):
             if reviews_count > 0:
                 avg_rating = round(sum(r.rating for r in db_reviews) / reviews_count, 1)
             else:
-                avg_rating = profile.average_rating if hasattr(profile, 'average_rating') and profile.average_rating else 4.8
+                avg_rating = 0.0
                 
             for r in db_reviews[:5]:
                 rev_name = getattr(r.reviewer, 'name', '') or r.reviewer.email
@@ -923,6 +946,13 @@ def worker_profile_edit(request):
         return redirect('become_worker')
         
     if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'toggle_availability':
+            is_available_raw = request.POST.get('is_available')
+            profile.is_available = True if is_available_raw in ['true', 'on', '1', 'True'] else False
+            profile.save()
+            return JsonResponse({'status': 'success', 'is_available': profile.is_available})
+            
         name = request.POST.get('name', '').strip()
         phone = request.POST.get('phone', '').strip()
         category_name = request.POST.get('category', '').strip()
@@ -973,12 +1003,22 @@ def worker_profile_edit(request):
         categories_choices = [cat.name for cat in Category.objects.all()]
     if not categories_choices:
         categories_choices = ['Plumber', 'Electrician', 'Painter', 'Mechanic', 'Labour', 'Carpenter', 'Other']
+    
+    # Sort with 'Other' at the end
+    cats_non_other = [c for c in categories_choices if c.lower() != 'other']
+    cats_other = [c for c in categories_choices if c.lower() == 'other']
+    categories_choices = cats_non_other + cats_other
         
     cities_choices = []
     if City:
         cities_choices = [city.name for city in City.objects.all()]
     if not cities_choices:
         cities_choices = ['Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Other']
+
+    # Sort with 'Other' at the end
+    cities_non_other = [c for c in cities_choices if c.lower() != 'other']
+    cities_other = [c for c in cities_choices if c.lower() == 'other']
+    cities_choices = cities_non_other + cities_other
         
     experience_choices = [
         ('1 year', '1 Year Experience', 1),
@@ -1053,9 +1093,15 @@ def worker_detail(request, worker_id):
     city_name = worker_p.city.name if worker_p.city else 'Other'
     status_str = 'Busy' if not worker_p.is_available else 'Available'
     
-    avg_rating = worker_p.average_rating if hasattr(worker_p, 'average_rating') else 4.8
-    if not avg_rating:
-        avg_rating = 4.8
+    avg_rating = 0.0
+    if Review:
+        try:
+            reviews_list_rating = Review.objects.filter(reviewee=worker_p.user)
+            reviews_count = reviews_list_rating.count()
+            if reviews_count > 0:
+                avg_rating = round(sum(r.rating for r in reviews_list_rating) / reviews_count, 1)
+        except Exception:
+            pass
         
     worker_data = {
         'id': str(worker_p.id),

@@ -1,4 +1,2 @@
-My bookings review dump: 3
-ID: 3 | rating=2 type=<class 'int'> | comment=he is not listening to me
-ID: 2 | rating=5 type=<class 'int'> | comment=nice work
-ID: 1 | rating=4 type=<class 'int'> | comment=he did nice work. nice guy. recommended
+My bookings review dump: 1
+ID: 1 | rating=4 type=<class 'int'> | comment=Did great job. Nice guy
